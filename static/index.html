@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧠 AI-Объяснялка</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🧠 AI-Объяснялка</h1>
+            <p class="subtitle">Введи сложную тему — получи простое объяснение!</p>
+        </header>
+
+        <!-- Main Form -->
+        <main class="main">
+            <div class="input-section">
+                <label for="topic-input">Что объяснить?</label>
+                <input 
+                    type="text" 
+                    id="topic-input" 
+                    placeholder="Например: квантовая физика, блокчейн, нейросети..."
+                    autocomplete="off"
+                >
+                
+                <label>На каком уровне?</label>
+                <div class="levels" id="levels-container">
+                    <!-- Уровни загрузятся через JS -->
+                    <button class="level-btn active" data-level="child">👶 5-летний ребёнок</button>
+                    <button class="level-btn" data-level="school">🎒 Школьник</button>
+                    <button class="level-btn" data-level="student">🎓 Студент</button>
+                    <button class="level-btn" data-level="expert">🔬 Эксперт</button>
+                </div>
+
+                <button id="explain-btn" class="explain-btn">
+                    <span class="btn-text">🚀 Объясни!</span>
+                    <span class="btn-loader hidden">⏳ Думаю...</span>
+                </button>
+            </div>
+
+            <!-- Error Message -->
+            <div id="error-message" class="error hidden"></div>
+
+            <!-- Result Section -->
+            <div id="result-section" class="result-section hidden">
+                <div class="result-header">
+                    <span class="result-topic" id="result-topic"></span>
+                    <span class="result-level" id="result-level"></span>
+                </div>
+                
+                <div class="result-content">
+                    <div id="explanation-text" class="explanation-text"></div>
+                </div>
+
+                <!-- Usage Info -->
+                <div id="usage-info" class="usage-info hidden">
+                    <details>
+                        <summary>📊 Информация об использовании токенов</summary>
+                        <div class="usage-details">
+                            <span id="tokens-prompt"></span>
+                            <span id="tokens-completion"></span>
+                            <span id="tokens-total"></span>
+                            <span id="model-used"></span>
+                        </div>
+                    </details>
+                </div>
+            </div>
+
+            <!-- History Section -->
+            <div id="history-section" class="history-section hidden">
+                <h3>📜 История запросов</h3>
+                <div id="history-list" class="history-list"></div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Учебный проект | Работает на <a href="https://platform.moonshot.cn/" target="_blank">Kimi API</a></p>
+        </footer>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
