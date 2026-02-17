@@ -3,8 +3,10 @@
     --bg-primary: #0f0f23;
     --bg-secondary: #1a1a2e;
     --bg-tertiary: #16213e;
+    --bg-overlay: rgba(0, 0, 0, 0.8);
     --accent-primary: #e94560;
     --accent-secondary: #533483;
+    --accent-hover: #ff6b6b;
     --text-primary: #eaeaea;
     --text-secondary: #a0a0a0;
     --success: #00d9ff;
@@ -128,9 +130,16 @@ label {
     font-weight: 600;
 }
 
+/* ===== Buttons Row ===== */
+.buttons-row {
+    display: flex;
+    gap: 12px;
+    align-items: stretch;
+}
+
 /* ===== Explain Button ===== */
 .explain-btn {
-    width: 100%;
+    flex: 1;
     padding: 18px 30px;
     font-size: 1.2rem;
     font-weight: 600;
@@ -158,6 +167,281 @@ label {
     display: inline-flex;
     align-items: center;
     gap: 10px;
+}
+
+/* ===== Settings Button ===== */
+.settings-btn {
+    width: 60px;
+    padding: 15px;
+    font-size: 1.5rem;
+    border: 2px solid var(--bg-tertiary);
+    border-radius: var(--border-radius);
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.settings-btn:hover {
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+    transform: rotate(30deg);
+}
+
+.settings-btn.active {
+    border-color: var(--accent-primary);
+    background: var(--accent-primary);
+    color: white;
+}
+
+.settings-icon {
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.settings-btn:hover .settings-icon {
+    transform: rotate(90deg);
+}
+
+/* ===== Settings Panel ===== */
+.settings-panel {
+    background: var(--bg-secondary);
+    border: 2px solid var(--accent-primary);
+    border-radius: var(--border-radius);
+    margin-bottom: 20px;
+    overflow: hidden;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.settings-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    background: var(--bg-tertiary);
+    border-bottom: 1px solid var(--accent-primary);
+}
+
+.settings-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: var(--text-primary);
+}
+
+.close-settings {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 8px;
+    transition: var(--transition);
+}
+
+.close-settings:hover {
+    color: var(--accent-primary);
+    background: var(--bg-secondary);
+}
+
+.settings-content {
+    padding: 25px;
+}
+
+.setting-item {
+    margin-bottom: 25px;
+}
+
+.setting-item:last-child {
+    margin-bottom: 0;
+}
+
+.setting-item label {
+    display: block;
+    margin-bottom: 10px;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.setting-item textarea,
+.setting-item input[type="text"] {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid var(--bg-tertiary);
+    border-radius: var(--border-radius);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 1rem;
+    transition: var(--transition);
+    resize: vertical;
+}
+
+.setting-item textarea:focus,
+.setting-item input[type="text"]:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+}
+
+.setting-item textarea::placeholder,
+.setting-item input[type="text"]::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.7;
+}
+
+.setting-hint {
+    display: block;
+    margin-top: 8px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+/* ===== Range Input ===== */
+.range-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.range-wrapper input[type="range"] {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 8px;
+    background: var(--bg-tertiary);
+    border-radius: 4px;
+    outline: none;
+}
+
+.range-wrapper input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    border-radius: 50%;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.range-wrapper input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 0 15px rgba(233, 69, 96, 0.5);
+}
+
+.range-wrapper input[type="range"]::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+}
+
+.range-value {
+    min-width: 60px;
+    padding: 8px 12px;
+    background: var(--bg-tertiary);
+    border-radius: 8px;
+    font-weight: 600;
+    color: var(--success);
+    text-align: center;
+}
+
+/* ===== Checkbox ===== */
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 22px;
+    height: 22px;
+    border: 2px solid var(--bg-tertiary);
+    border-radius: 6px;
+    background: var(--bg-primary);
+    cursor: pointer;
+    position: relative;
+    transition: var(--transition);
+}
+
+.checkbox-label input[type="checkbox"]:checked {
+    background: var(--accent-primary);
+    border-color: var(--accent-primary);
+}
+
+.checkbox-label input[type="checkbox"]:checked::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.checkbox-text {
+    color: var(--text-primary);
+}
+
+/* ===== Settings Footer ===== */
+.settings-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 20px 25px;
+    background: var(--bg-tertiary);
+    border-top: 1px solid var(--bg-secondary);
+}
+
+.reset-btn,
+.apply-btn {
+    padding: 12px 24px;
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.reset-btn {
+    background: transparent;
+    border: 2px solid var(--text-secondary);
+    color: var(--text-secondary);
+}
+
+.reset-btn:hover {
+    border-color: var(--text-primary);
+    color: var(--text-primary);
+}
+
+.apply-btn {
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    border: none;
+    color: white;
+}
+
+.apply-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(233, 69, 96, 0.3);
 }
 
 /* ===== Error Message ===== */
@@ -327,6 +611,15 @@ label {
         grid-template-columns: 1fr;
     }
     
+    .buttons-row {
+        flex-direction: column;
+    }
+    
+    .settings-btn {
+        width: 100%;
+        padding: 15px;
+    }
+    
     .result-header {
         flex-direction: column;
         align-items: flex-start;
@@ -335,6 +628,53 @@ label {
     .usage-details {
         grid-template-columns: 1fr;
     }
+    
+    .settings-footer {
+        flex-direction: column;
+    }
+    
+    .reset-btn,
+    .apply-btn {
+        width: 100%;
+    }
+}
+
+/* ===== Settings Used Info ===== */
+.settings-used-info {
+    margin-top: 20px;
+    padding: 15px 20px;
+    background: var(--bg-tertiary);
+    border-radius: var(--border-radius);
+    border-left: 3px solid var(--accent-primary);
+}
+
+.settings-used-info details {
+    color: var(--text-secondary);
+}
+
+.settings-used-info summary {
+    cursor: pointer;
+    user-select: none;
+    font-weight: 500;
+}
+
+.settings-used-info summary:hover {
+    color: var(--text-primary);
+}
+
+.settings-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+    padding: 12px;
+    background: var(--bg-primary);
+    border-radius: var(--border-radius);
+    font-size: 0.9rem;
+}
+
+.settings-details div {
+    color: var(--text-secondary);
 }
 
 /* ===== Typing Animation ===== */

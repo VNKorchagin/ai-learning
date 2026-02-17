@@ -14,7 +14,8 @@ API endpoints:
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from typing import Optional
 import os
 
 from gemini_client import GeminiClient, LEVEL_NAMES
@@ -22,7 +23,7 @@ from gemini_client import GeminiClient, LEVEL_NAMES
 app = FastAPI(
     title="AI-Объяснялка",
     description="Объясняем сложные темы простым языком с помощью Gemini AI",
-    version="2.0.0",
+    version="2.1.0",
 )
 
 # Подключаем статические файлы (фронтенд)
@@ -34,6 +35,24 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 class ExplainRequest(BaseModel):
     topic: str
     level: str = "child"  # child, school, student, expert
+    format_description: Optional[str] = Field(
+        default="",
+        description="Дополнительное описание формата ответа"
+    )
+    max_tokens: Optional[int] = Field(
+        default=2000,
+        ge=100,
+        le=8000,
+        description="Максимальное количество токенов в ответе"
+    )
+    stop_sequence: Optional[str] = Field(
+        default="",
+        description="Стоп-слово для остановки генерации"
+    )
+    explicit_stop: Optional[bool] = Field(
+        default=True,
+        description="Добавить явную инструкцию о завершении ответа"
+    )
 
 
 class ExplainResponse(BaseModel):
@@ -44,6 +63,7 @@ class ExplainResponse(BaseModel):
     level_name: str
     model: str | None
     usage: dict
+    settings: dict
 
 
 class LevelsResponse(BaseModel):
@@ -77,6 +97,10 @@ async def explain_topic(request: ExplainRequest):
     Параметры:
         - topic: Тема для объяснения (например, "блокчейн")
         - level: Уровень сложности (child/school/student/expert)
+        - format_description: Дополнительное описание формата ответа
+        - max_tokens: Максимальная длина ответа (100-8000)
+        - stop_sequence: Стоп-слово для остановки генерации
+        - explicit_stop: Добавить явную инструкцию о завершении
     """
     if not request.topic or len(request.topic.strip()) < 2:
         raise HTTPException(status_code=400, detail="Тема слишком короткая")
@@ -89,7 +113,14 @@ async def explain_topic(request: ExplainRequest):
     
     try:
         client = GeminiClient()
-        result = await client.explain(request.topic.strip(), request.level)
+        result = await client.explain(
+            topic=request.topic.strip(),
+            level=request.level,
+            format_description=request.format_description or "",
+            max_tokens=request.max_tokens or 2000,
+            stop_sequence=request.stop_sequence or "",
+            explicit_stop=request.explicit_stop if request.explicit_stop is not None else True,
+        )
         return result
     
     except ValueError as e:

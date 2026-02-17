@@ -7,6 +7,16 @@ const state = {
     currentLevel: 'child',
     isLoading: false,
     history: JSON.parse(localStorage.getItem('ai_explainer_history') || '[]'),
+    settings: JSON.parse(localStorage.getItem('ai_explainer_settings') || '{}'),
+    isSettingsOpen: false,
+};
+
+// ===== Default Settings =====
+const defaultSettings = {
+    formatDescription: '',
+    maxTokens: 2000,
+    stopSequence: '',
+    explicitStop: true,
 };
 
 // ===== DOM Elements =====
@@ -28,6 +38,17 @@ const elements = {
     modelUsed: document.getElementById('model-used'),
     historySection: document.getElementById('history-section'),
     historyList: document.getElementById('history-list'),
+    // Settings elements
+    settingsBtn: document.getElementById('settings-btn'),
+    settingsPanel: document.getElementById('settings-panel'),
+    closeSettings: document.getElementById('close-settings'),
+    formatDescription: document.getElementById('format-description'),
+    maxTokens: document.getElementById('max-tokens'),
+    maxTokensValue: document.getElementById('max-tokens-value'),
+    stopSequence: document.getElementById('stop-sequence'),
+    explicitStop: document.getElementById('explicit-stop'),
+    resetSettings: document.getElementById('reset-settings'),
+    applySettings: document.getElementById('apply-settings'),
 };
 
 // ===== Event Listeners =====
@@ -35,6 +56,8 @@ document.addEventListener('DOMContentLoaded', () => {
     initLevelButtons();
     initExplainButton();
     initEnterKey();
+    initSettings();
+    loadSettings();
     renderHistory();
 });
 
@@ -44,11 +67,8 @@ function initLevelButtons() {
     
     buttons.forEach(btn => {
         btn.addEventListener('click', () => {
-            // Remove active from all
             buttons.forEach(b => b.classList.remove('active'));
-            // Add active to clicked
             btn.classList.add('active');
-            // Update state
             state.currentLevel = btn.dataset.level;
         });
     });
@@ -64,6 +84,89 @@ function initEnterKey() {
             handleExplain();
         }
     });
+}
+
+// ===== Settings Functions =====
+function initSettings() {
+    // Toggle settings panel
+    elements.settingsBtn.addEventListener('click', toggleSettings);
+    elements.closeSettings.addEventListener('click', toggleSettings);
+    
+    // Update range value display
+    elements.maxTokens.addEventListener('input', (e) => {
+        elements.maxTokensValue.textContent = e.target.value;
+    });
+    
+    // Apply and reset buttons
+    elements.applySettings.addEventListener('click', saveSettingsToStorage);
+    elements.resetSettings.addEventListener('click', resetSettings);
+    
+    // Close settings when clicking outside
+    document.addEventListener('click', (e) => {
+        if (state.isSettingsOpen && 
+            !elements.settingsPanel.contains(e.target) && 
+            !elements.settingsBtn.contains(e.target)) {
+            toggleSettings();
+        }
+    });
+}
+
+function toggleSettings() {
+    state.isSettingsOpen = !state.isSettingsOpen;
+    elements.settingsPanel.classList.toggle('hidden', !state.isSettingsOpen);
+    elements.settingsBtn.classList.toggle('active', state.isSettingsOpen);
+}
+
+function loadSettings() {
+    const settings = { ...defaultSettings, ...state.settings };
+    
+    elements.formatDescription.value = settings.formatDescription || '';
+    elements.maxTokens.value = settings.maxTokens || 2000;
+    elements.maxTokensValue.textContent = settings.maxTokens || 2000;
+    elements.stopSequence.value = settings.stopSequence || '';
+    elements.explicitStop.checked = settings.explicitStop !== false;
+}
+
+function saveSettingsToStorage() {
+    const settings = {
+        formatDescription: elements.formatDescription.value.trim(),
+        maxTokens: parseInt(elements.maxTokens.value),
+        stopSequence: elements.stopSequence.value.trim(),
+        explicitStop: elements.explicitStop.checked,
+    };
+    
+    state.settings = settings;
+    localStorage.setItem('ai_explainer_settings', JSON.stringify(settings));
+    
+    // Visual feedback
+    elements.applySettings.textContent = '✓ Сохранено!';
+    elements.applySettings.style.background = 'linear-gradient(135deg, #00d9ff, #00b4d8)';
+    
+    setTimeout(() => {
+        elements.applySettings.textContent = '✓ Применить';
+        elements.applySettings.style.background = '';
+        toggleSettings();
+    }, 800);
+}
+
+function resetSettings() {
+    elements.formatDescription.value = '';
+    elements.maxTokens.value = 2000;
+    elements.maxTokensValue.textContent = 2000;
+    elements.stopSequence.value = '';
+    elements.explicitStop.checked = true;
+    
+    state.settings = { ...defaultSettings };
+    localStorage.setItem('ai_explainer_settings', JSON.stringify(state.settings));
+}
+
+function getSettings() {
+    return {
+        formatDescription: elements.formatDescription.value.trim(),
+        maxTokens: parseInt(elements.maxTokens.value),
+        stopSequence: elements.stopSequence.value.trim(),
+        explicitStop: elements.explicitStop.checked,
+    };
 }
 
 // ===== Main Function =====
@@ -85,11 +188,19 @@ async function handleExplain() {
     // Clear previous errors
     hideError();
     
+    // Close settings if open
+    if (state.isSettingsOpen) {
+        toggleSettings();
+    }
+    
     // Set loading state
     setLoading(true);
     
+    // Get settings
+    const settings = getSettings();
+    
     try {
-        console.log('🚀 Отправка запроса:', { topic, level: state.currentLevel });
+        console.log('🚀 Отправка запроса:', { topic, level: state.currentLevel, settings });
         
         const response = await fetch('/api/explain', {
             method: 'POST',
@@ -99,6 +210,10 @@ async function handleExplain() {
             body: JSON.stringify({
                 topic: topic,
                 level: state.currentLevel,
+                format_description: settings.formatDescription,
+                max_tokens: settings.maxTokens,
+                stop_sequence: settings.stopSequence,
+                explicit_stop: settings.explicitStop,
             }),
         });
         
@@ -147,6 +262,29 @@ function displayResult(data) {
         elements.modelUsed.textContent = `🤖 Модель: ${data.model || 'unknown'}`;
     }
     
+    // Show settings info if custom settings were used
+    if (data.settings && (data.settings.format_description || data.settings.stop_sequence || data.settings.max_tokens !== 2000)) {
+        const settingsInfo = document.createElement('div');
+        settingsInfo.className = 'settings-used-info';
+        settingsInfo.innerHTML = `
+            <details>
+                <summary>⚙️ Применённые настройки</summary>
+                <div class="settings-details">
+                    ${data.settings.format_description ? `<div>📝 Формат: ${escapeHtml(data.settings.format_description)}</div>` : ''}
+                    ${data.settings.stop_sequence ? `<div>🛑 Стоп-слово: ${escapeHtml(data.settings.stop_sequence)}</div>` : ''}
+                    <div>📏 Max tokens: ${data.settings.max_tokens}</div>
+                    <div>⛔ Явная инструкция: ${data.settings.explicit_stop ? 'да' : 'нет'}</div>
+                </div>
+            </details>
+        `;
+        
+        // Remove previous settings info if exists
+        const prevSettings = elements.resultSection.querySelector('.settings-used-info');
+        if (prevSettings) prevSettings.remove();
+        
+        elements.resultSection.insertBefore(settingsInfo, elements.usageInfo);
+    }
+    
     // Scroll to result
     elements.resultSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
@@ -178,6 +316,7 @@ function addToHistory(data) {
         level: data.level,
         levelName: data.level_name,
         explanation: data.explanation,
+        settings: data.settings,
         timestamp: new Date().toISOString(),
     };
     
@@ -233,6 +372,15 @@ function loadFromHistory(index) {
         btn.classList.toggle('active', btn.dataset.level === item.level);
     });
     
+    // Load settings if present
+    if (item.settings) {
+        elements.formatDescription.value = item.settings.format_description || '';
+        elements.maxTokens.value = item.settings.max_tokens || 2000;
+        elements.maxTokensValue.textContent = item.settings.max_tokens || 2000;
+        elements.stopSequence.value = item.settings.stop_sequence || '';
+        elements.explicitStop.checked = item.settings.explicit_stop !== false;
+    }
+    
     // Display result directly without animation
     elements.resultSection.classList.remove('hidden');
     elements.resultTopic.textContent = item.topic;
@@ -251,6 +399,7 @@ function setLoading(loading) {
     elements.btnText.classList.toggle('hidden', loading);
     elements.btnLoader.classList.toggle('hidden', !loading);
     elements.topicInput.disabled = loading;
+    elements.settingsBtn.disabled = loading;
     
     if (loading) {
         elements.explanationText.classList.add('loading');
@@ -263,7 +412,6 @@ function showError(message) {
     elements.errorMessage.textContent = `⚠️ ${message}`;
     elements.errorMessage.classList.remove('hidden');
     
-    // Auto-hide after 5 seconds
     setTimeout(() => {
         hideError();
     }, 5000);
